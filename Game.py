@@ -1,14 +1,13 @@
-import pygame as pygame
-
 
 class Game():
-    def __init__(self):
+    def __init__(self, pygame):
+        #pygame = pygame
         pygame.init()
         screen = pygame.display.set_mode((400,300))
 
         self.state = 0
         self.started = False
-        self.running = True
+        self.done = False
 
         self.movingUp = False
         self.movingRight = False
@@ -39,29 +38,41 @@ class Game():
         self.testTal = 0
 
 
+    def tick(self,pygame,events,pressed):
+        self.input(pygame,events,pressed)
 
 
-    def input(self,pygameEvents):
-        #musepositionen
+
+    def input(self,pygame,events,pressed):
+        #mus:  positionen og klik
         mouseX,mouseY = pygame.mouse.get_pos()
-        #print(mouseX,mouseY)
-
-        #trykkede knapper
-        pygame.event.get()
         leftClick,middleClick,rightClick = pygame.mouse.get_pressed()
-        if leftClick or rightClick or middleClick:
-            print(leftClick,rightClick,middleClick)
 
-        keys=pygame.key.get_pressed()
+        #keyboard keys
+        for event in events:
+            if event.type == pygame.KEYDOWN:
+                print("key pressed")
+                print(event.key)
+                if event.key == 97:
+                    self.movingLeft = True
+                elif event.key == 100:
+                    self.movingRight = True
+                elif event.key == 119:
+                    self.movingUp = True
+                elif event.key == 115:
+                    self.movingDown = True
 
-        a = 0
-        for key in range (0,len(keys)):
-            a += 1
-            if key == 1:
-                pass
-                #print("key", a)
-        #if self.test:
-            #print("True")
+            if event.type == pygame.KEYUP:
+                print("key lifted")
+                print(event.key)
+                if event.key == 97:
+                    self.movingLeft = False
+                elif event.key == 100:
+                    self.movingRight = False
+                elif event.key == 119:
+                    self.movingUp = False
+                elif event.key == 115:
+                    self.movingDown = False
 
 
         if self.state == 0:
@@ -81,8 +92,6 @@ class Game():
             pass
             #print("State 1")
 
-
-    
     def lavKnapper(self):
         self.knapper = []
         '''

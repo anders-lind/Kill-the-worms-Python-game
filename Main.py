@@ -1,27 +1,32 @@
 import pygame as pygame
 from Game import *
 
-game = Game()
+game = Game(pygame)
+clock = pygame.time.Clock()
+
 
 def main():
-	
-	while game.running:
+	screen = pygame.display.set_mode((400,300))
+
+	while not game.done:
 		events = pygame.event.get()
 		for event in events:
 			if event.type == pygame.QUIT:
-				game.running = False
+				game.done = True
 		
-		game.input(events)
-		#game.physics()
-		render()
+		pressed = pygame.key.get_pressed()
+
+		game.tick(pygame,events,pressed)
+		render(screen)
+
+		clock.tick(60)
 		
 		
 		
 
-def render():
+def render(screen):
 	if (game.started):
 		#things on the screen is rendered here
-		screen = pygame.display.set_mode((400,300))
 
 
 		font1 = pygame.font.SysFont('Comic Sans MS', 30)
