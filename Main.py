@@ -9,7 +9,7 @@ def main():
 	if not game.started:
 		#åbner et vindue, Køres kun en gang
 		pygame.init()
-		logo = pygame.image.load("32.png")
+		logo = pygame.image.load("logo.png")
 		pygame.display.set_icon(logo)
 		pygame.display.set_caption("Python-Spil")
 		screen = pygame.display.set_mode((800,600))
@@ -31,8 +31,6 @@ def main():
 		clock.tick(60)
 		
 		
-		
-
 def render(screen):
 	if (game.started):
 		#things on the screen is rendered here
@@ -42,7 +40,6 @@ def render(screen):
 		
 		#state 0 = Start menu
 		#state 1 = in-game
-		#state 2 = in-game pause
 
 		if game.state == 0:
 			#StartKnap
@@ -58,10 +55,13 @@ def render(screen):
 				
 
 		if game.state == 1:
+
+			#background
 			screen.blit(game.sheetTerrain,(-128*2,0))
 			screen.blit(game.sheetTerrain,(-128*6,128))
 			screen.blit(game.sheetTerrain,(-256*4,256))
 
+			#Player
 			#diagonal movement
 			if game.w and game.d:
 				screen.blit(game.playerSprites[1],game.playerPos)
@@ -71,7 +71,6 @@ def render(screen):
 				screen.blit(game.playerSprites[5],game.playerPos)
 			elif game.w and game.a:
 				screen.blit(game.playerSprites[7],game.playerPos)
-
 			#straightMovemt
 			elif game.w:
 				screen.blit(game.playerSprites[0],game.playerPos)
@@ -81,9 +80,8 @@ def render(screen):
 				screen.blit(game.playerSprites[4],game.playerPos)
 			elif game.a:
 				screen.blit(game.playerSprites[6],game.playerPos)
-
 			#Idle
-			elif game.lastMovement == None:
+			elif game.lastMovement == "None":
 				screen.blit(game.playerSprites[4],game.playerPos)
 			elif game.lastMovement == "UP":
 				screen.blit(game.playerSprites[0],game.playerPos)
@@ -101,6 +99,26 @@ def render(screen):
 				screen.blit(game.playerSprites[2],game.playerPos)
 			elif game.lastMovement == "LEFT":
 				screen.blit(game.playerSprites[6],game.playerPos)
+
+			#bombs
+			for b in game.bombs:
+				screen.blit(game.spriteDynamite,b.pos)
+			
+			#animations
+			n = -1
+			for a in game.animations:
+				n += 1
+				a.tick()
+				if a.type == 2:
+					if not a.time > len(game.explosionSprites):
+						orgSprite = game.explosionSprites[a.time-1]
+						sprite = pygame.transform.scale(orgSprite,(100,100))
+						pos = a.pos
+						screen.blit(sprite,pos)
+					else:
+						del game.animations[n]
+					
+
 			
 		pygame.display.flip()
 
