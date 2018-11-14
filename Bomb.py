@@ -2,7 +2,8 @@ import math as math
 from Animations import AnimeExplosions
 
 class Bomb():
-    def __init__(self,x1,y1,x2,y2,vel=2):
+    def __init__(self,x1,y1,x2,y2,counter=100,vel=2):
+        self.counter = counter
         self.endPos = [x2,y2]
         self.pos = [x1,y1]
         self.vel = vel
@@ -16,16 +17,16 @@ class Bomb():
         self.pos[0] += self.direction[0] * self.vel
         self.pos[1] += self.direction[1] * self.vel
     
-    def clock(self):
+    def clock(self): 
         self.timer += 1
         return self.timer
 
 
     def explode(self):
         self.exploded = True
-        explosion = AnimeExplosions(self.pos,2)
-        return(explosion)
+        explosion = AnimeExplosions(self.pos)
         print("EXPLOSION!")
+        return(explosion)
 
     
     def findDirection(self,startPos,endPos):
@@ -41,3 +42,5 @@ class Bomb():
 
         direction = (directionX,directionY)
         return direction
+
+

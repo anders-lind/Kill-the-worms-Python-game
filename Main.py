@@ -39,8 +39,6 @@ def render(screen):
 		font1 = pygame.font.SysFont('Comic Sans MS', 30)
 		
 		#state 0 = Start menu
-		#state 1 = in-game
-
 		if game.state == 0:
 			#StartKnap
 			if game.startKnapHover:
@@ -52,14 +50,22 @@ def render(screen):
 				pygame.draw.rect(screen,(180,180,180),(100,75,200,50))
 				textSurface = font1.render('Start', True, (100, 100, 100))
 				screen.blit(textSurface,(100+60,75))
-				
 
+		#state 1 = in-game				
 		if game.state == 1:
-
 			#background
 			screen.blit(game.sheetTerrain,(-128*2,0))
 			screen.blit(game.sheetTerrain,(-128*6,128))
 			screen.blit(game.sheetTerrain,(-256*4,256))
+			
+			#spriteTEST
+			'''
+			type = 1
+			info = ["RUNNING","UP"]
+			playerSprite = game.getSprite(type,info)
+			print("playerSprite = ",playerSprite)
+			screen.blit(playerSprite,(-128*2,0))
+			'''
 
 			#Player
 			#diagonal movement
@@ -103,13 +109,21 @@ def render(screen):
 			#bombs
 			for b in game.bombs:
 				screen.blit(game.spriteDynamite,b.pos)
+
+			#enemies
+			for e in game.enemies:
+				e.tick()
+				if e.timer+1 > len(game.wormAttack1Sprites):
+					e.timer = 0
+				screen.blit(game.wormAttack1Sprites[e.timer],e.pos)
+
 			
 			#animations
 			n = -1
 			for a in game.animations:
 				n += 1
-				a.tick()
 				if a.type == 2:
+					a.tick()
 					if not a.time > len(game.explosionSprites):
 						orgSprite = game.explosionSprites[a.time-1]
 						sprite = pygame.transform.scale(orgSprite,(100,100))
@@ -117,6 +131,17 @@ def render(screen):
 						screen.blit(sprite,pos)
 					else:
 						del game.animations[n]
+				#enemy death
+				'''
+				if a.type == 3:
+					a.tick()
+					if  a.time+1 > len(game.explosionSprites):
+						a.time = 0
+					orgSprite = game.wormAttack1Sprites[0]
+					sprite = pygame.transform.scale(orgSprite,(100,100))
+					pos = a.pos
+					screen.blit(sprite,pos)
+				'''
 					
 
 			
