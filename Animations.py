@@ -33,7 +33,7 @@ class AnimePlayer():
             self.setup()
         self.time += 1
 
-
+'''
     def setup(self,pygame):
         self.pygame = pygame
         self.sheetPlayerRunning = self.pygame.image.load("hr-level1_running.png").convert()
@@ -66,4 +66,4 @@ class AnimePlayer():
             image.blit(self.sheetPlayerRunning,(0, 0),pygame.Rect(spriteSize))
             sprites.append(image)
             return sprites
-
+'''

@@ -12,10 +12,10 @@ def main():
 		logo = pygame.image.load("logo.png")
 		pygame.display.set_icon(logo)
 		pygame.display.set_caption("Python-Spil")
-		screen = pygame.display.set_mode((800,600))
+		screen = pygame.display.set_mode((1200,700))
 		game.started = True
 		game.sprites(pygame)
-		print("game starting")
+		print("game started")
 
 	while not game.done:
 		events = pygame.event.get()
@@ -54,70 +54,89 @@ def render(screen):
 		#state 1 = in-game				
 		if game.state == 1:
 			#background
-			screen.blit(game.sheetTerrain,(-128*2,0))
-			screen.blit(game.sheetTerrain,(-128*6,128))
-			screen.blit(game.sheetTerrain,(-256*4,256))
-			
-			#spriteTEST
-			'''
-			type = 1
-			info = ["RUNNING","UP"]
-			playerSprite = game.getSprite(type,info)
-			print("playerSprite = ",playerSprite)
-			screen.blit(playerSprite,(-128*2,0))
-			'''
+			screen.blit(game.sheetTerrain,(-128*2,128*0))
+			screen.blit(game.sheetTerrain,(-128*4,128*1))
+			screen.blit(game.sheetTerrain,(-128*3,128*2))
+			screen.blit(game.sheetTerrain,(-128*1,128*3))
+			screen.blit(game.sheetTerrain,(-128*4,128*4))
+			screen.blit(game.sheetTerrain,(-128*3,128*5))
+
 
 			#Player
 			#diagonal movement
+			posX = game.playerPos[0] - game.playerSize[0]/2
+			posY = game.playerPos[1] - game.playerSize[1]/2
+			playerSpritePos = [posX,posY]
+
+			#hitbox
+			if game.devMode:
+				pos = [int(game.playerPos[0]),int(game.playerPos[1])]
+				pygame.draw.circle(screen,[255,0,0],pos,int(game.playerSize[1]/2),1)
+
 			if game.w and game.d:
-				screen.blit(game.playerSprites[1],game.playerPos)
+				screen.blit(game.playerSprites[1],playerSpritePos)
 			elif game.s and game.d:
-				screen.blit(game.playerSprites[3],game.playerPos)
+				screen.blit(game.playerSprites[3],playerSpritePos)
 			elif game.s and game.a:
-				screen.blit(game.playerSprites[5],game.playerPos)
+				screen.blit(game.playerSprites[5],playerSpritePos)
 			elif game.w and game.a:
-				screen.blit(game.playerSprites[7],game.playerPos)
+				screen.blit(game.playerSprites[7],playerSpritePos)
 			#straightMovemt
 			elif game.w:
-				screen.blit(game.playerSprites[0],game.playerPos)
+				screen.blit(game.playerSprites[0],playerSpritePos)
 			elif game.d:
-				screen.blit(game.playerSprites[2],game.playerPos)
+				screen.blit(game.playerSprites[2],playerSpritePos)
 			elif game.s:
-				screen.blit(game.playerSprites[4],game.playerPos)
+				screen.blit(game.playerSprites[4],playerSpritePos)
 			elif game.a:
-				screen.blit(game.playerSprites[6],game.playerPos)
+				screen.blit(game.playerSprites[6],playerSpritePos)
 			#Idle
 			elif game.lastMovement == "None":
-				screen.blit(game.playerSprites[4],game.playerPos)
+				screen.blit(game.playerSprites[4],playerSpritePos)
 			elif game.lastMovement == "UP":
-				screen.blit(game.playerSprites[0],game.playerPos)
+				screen.blit(game.playerSprites[0],playerSpritePos)
 			elif game.lastMovement == "UP_RIGHT":
-				screen.blit(game.playerSprites[1],game.playerPos)
+				screen.blit(game.playerSprites[1],playerSpritePos)
 			elif game.lastMovement == "UP_LEFT":
-				screen.blit(game.playerSprites[7],game.playerPos)
+				screen.blit(game.playerSprites[7],playerSpritePos)
 			elif game.lastMovement == "DOWN":
-				screen.blit(game.playerSprites[4],game.playerPos)
+				screen.blit(game.playerSprites[4],playerSpritePos)
 			elif game.lastMovement == "DOWN_RIGHT":
-				screen.blit(game.playerSprites[3],game.playerPos)
+				screen.blit(game.playerSprites[3],playerSpritePos)
 			elif game.lastMovement == "DOWN_LEFT":
-				screen.blit(game.playerSprites[5],game.playerPos)
+				screen.blit(game.playerSprites[5],playerSpritePos)
 			elif game.lastMovement == "RIGHT":
-				screen.blit(game.playerSprites[2],game.playerPos)
+				screen.blit(game.playerSprites[2],playerSpritePos)
 			elif game.lastMovement == "LEFT":
-				screen.blit(game.playerSprites[6],game.playerPos)
+				screen.blit(game.playerSprites[6],playerSpritePos)
 
-			#bombs
-			for b in game.bombs:
-				screen.blit(game.spriteDynamite,b.pos)
 
 			#enemies
 			for e in game.enemies:
 				e.tick()
-				if e.timer+1 > len(game.wormAttack1Sprites):
-					e.timer = 0
-				screen.blit(game.wormAttack1Sprites[e.timer],e.pos)
+				if e.alive:
+					if e.timer+1 > len(game.wormAttack1Sprites):
+						e.timer = 0
+					sprite = game.wormAttack1Sprites[e.timer]
+				if not e.alive:
+					if e.timer+1 > len(game.wormDieSprites):
+						sprite = game.wormDieSprites[len(game.wormDieSprites)-1]
+					else:
+						sprite = game.wormDieSprites[e.timer]
+				screen.blit(sprite,e.pos)
+				#hitbox
+				if game.devMode:
+					pygame.draw.circle(screen,[255,0,0],e.pos,int(game.enemySize[1]/2),1)
 
-			
+			#bombs
+			for b in game.bombs:
+				screen.blit(game.spriteDynamite,b.pos)
+				#hitbox
+				if game.devMode:
+					pos = [int(b.pos[0]),int(b.pos[1])]
+					pygame.draw.circle(screen,[255,0,0],pos,int(game.bombSize[1]/2),1)
+
+
 			#animations
 			n = -1
 			for a in game.animations:
@@ -125,30 +144,22 @@ def render(screen):
 				if a.type == 2:
 					a.tick()
 					if not a.time > len(game.explosionSprites):
-						orgSprite = game.explosionSprites[a.time-1]
-						sprite = pygame.transform.scale(orgSprite,(100,100))
+						sprite = game.explosionSprites[a.time-1]
 						pos = a.pos
 						screen.blit(sprite,pos)
 					else:
 						del game.animations[n]
-				#enemy death
-				'''
-				if a.type == 3:
-					a.tick()
-					if  a.time+1 > len(game.explosionSprites):
-						a.time = 0
-					orgSprite = game.wormAttack1Sprites[0]
-					sprite = pygame.transform.scale(orgSprite,(100,100))
-					pos = a.pos
-					screen.blit(sprite,pos)
-				'''
-					
-
 			
+			#HUD
+			
+			#points
+			pygame.draw.rect(screen,(0,0,0,0),(990,10,200,50))
+			text = str("Points: " + str(game.points))
+			textSurface = font1.render(text, True, (255, 255, 255))
+			screen.blit(textSurface,(1000,10))
+
+					
 		pygame.display.flip()
-
-
-
 
 
 main()

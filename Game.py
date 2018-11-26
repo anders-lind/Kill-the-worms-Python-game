@@ -1,16 +1,16 @@
 from Bomb import Bomb
 from Enemy import Enemy
 from Animations import AnimePlayer, AnimeExplosions
+from random import randint
 
 class Game():
-    def __init__(self, pygame):
-        #pygame.init()
-        #screen = pygame.display.set_mode((1,1))
-        
+    def __init__(self, pygame):        
         #Game status variables
         self.started = False
         self.done = False
         self.state = 0
+        self.state1Started = False
+        self.devMode = True
 
         #mus
         self.mouseX,self.mouseY = 0,0
@@ -22,6 +22,7 @@ class Game():
         self.a = False
         self.k = False
         self.e = False
+        self.p = False
         self.leftClick = False
         self.rightClick = False
         self.middleClick = False
@@ -29,8 +30,14 @@ class Game():
         #Knapper
         self.startKnapHover = False
 
+        #points
+        self.points = 0
+
         #Player variables
+        playerScale = 0.5
+        self.playerSize = [int(88*playerScale),int(132*playerScale)]
         self.lastMovement = "None"
+        self.playerSpeed = 5
         self.pX = 0
         self.pY = 0
         self.playerPos = [self.pX,self.pY]
@@ -39,17 +46,23 @@ class Game():
         self.playerVel = [self.pVX,self.pVY]
 
         #bombs
-        self.bombThrowable = True
         self.bombs = []
+        bombScale = 0.5
+        self.bombSize = [int(64*bombScale),int(59*bombScale)]
+        self.bombThrowable = True
 
         #enemy
         self.enemies = []
+        self.deadEnemies = []
+        enemiyScale = 0.5
+        self.enemySize = [int(248*enemiyScale),int(170*enemiyScale)]
 
         #Sprites
         self.playerSprites = []
         self.explosionSprites = []
         self.wormReadySprites = []
         self.wormAttack1Sprites = []
+        self.wormDieSprites = []
 
         #test
         self.animePlayer = AnimePlayer(pygame)
@@ -57,23 +70,45 @@ class Game():
         #animations
         self.animations = []
 
+
     def tick(self,pygame,events,pressed):
+        self.gameConfig()
         self.input(pygame,events,pressed)
         self.physics()
-        
+
 
     def createBomb(self):
         print("create bomb")
         bomb = Bomb(self.playerPos[0],self.playerPos[1],self.mouseX,self.mouseY)
         self.bombs.append(bomb)
     
-    def createEnemy(self,pos):
+    def createEnemy(self,pos,size):
         print("create enemy")
-        pos = pos
-        enemy = Enemy(pos)
+        enemy = Enemy(pos,size)
         self.enemies.append(enemy)
-        wormAnimation = AnimeExplosions(pos,3)
-        self.animations.append(wormAnimation)
+    
+    def earnPoints(self,points):
+        self.points += points
+        print("You have earned ",self.points, " point!")
+
+    def map(self):
+        print("creating map")
+        for i in range (0,10):
+            #x = 1200  y = 700
+
+            x = randint(100,1100)
+            y = randint(100,600)
+            pos = [x,y]
+            self.createEnemy(pos,self.enemySize)
+
+
+    def gameConfig(self):
+        if self.state == 1:
+            if not self.state1Started:
+                self.state1Started = True
+                self.map()
+        else:
+            pass
 
 
     def input(self,pygame,events,pressed):
@@ -93,6 +128,8 @@ class Game():
                     self.e = True
                 elif event.key == 107:
                     self.k = True
+                elif event.key == 112:
+                    self.p = True
                 elif event.key == 115:
                     self.s = True
                 elif event.key == 119:
@@ -108,6 +145,8 @@ class Game():
                     self.e = False
                 elif event.key == 107:
                     self.k = False
+                elif event.key == 112:
+                    self.p = False
                 elif event.key == 115:
                     self.s = False
                 elif event.key == 119:
@@ -132,30 +171,33 @@ class Game():
                 self.bombThrowable = True
             if self.e and self.enemyCreatable:
                 pos = [self.mouseX,self.mouseY]
-                self.createEnemy(pos)
+                self.createEnemy(pos,self.enemySize)
                 self.enemyCreatable = False
             if not self.e:
                 self.enemyCreatable = True
+            if self.p:
+                for e in self.enemies:
+                    e.die()
 
 
     def physics(self):
         if self.state == 1:
             #player x-movement
             if self.d:
-                self.pVX = 10
+                self.pVX = self.playerSpeed
                 self.lastMovement = "RIGHT"
             elif self.a:
-                self.pVX = -10
+                self.pVX = -self.playerSpeed
                 self.lastMovement = "LEFT"
             else:
                 self.pVX *= 0.5
 
             #player y-movement
             if self.w:
-                self.pVY = -10
+                self.pVY = -self.playerSpeed
                 self.lastMovement = "UP"
             elif self.s:
-                self.pVY = 10
+                self.pVY = self.playerSpeed
                 self.lastMovement = "DOWN"
             else:
                 self.pVY *= 0.5
@@ -186,12 +228,17 @@ class Game():
                     self.animations.append(explosion)
 
                     #enemy hitbox
+                    eL = []
                     eN = -1
                     for e in self.enemies:
                         eN += 1
-                        if e.checkHitox(b.pos):
-                            print("Enemy ",eN+1," dead")
-                            e.die
+                        if not e.alive:
+                            continue
+                        if e.checkHitox(b.pos,b.radius):
+                            print("Enemy killed! ", len(self.enemies)-1, " enemies left!")
+                            self.earnPoints(100)
+                            e.die()
+                            self.deadEnemies.append(e)
                             del self.enemies[eN]
 
                     del self.bombs[bN]
@@ -207,67 +254,73 @@ class Game():
 
 
     def sprites(self,pygame):
-        #single sprites
-        self.spriteDynamite = pygame.image.load("cliff-explosives.png").convert()
-
         #sprite sheets
-        self.sheetTerrain = pygame.image.load("grass-1-1.png").convert()
-        self.sheetPlayerIdle = pygame.image.load("hr-level1_idle.png").convert()
-        self.sheetPlayerRunning = pygame.image.load("hr-level1_running.png").convert()
-        self.sheetExplosion = pygame.image.load("explosion-1.png").convert()
-        self.sheetWormReady = pygame.image.load("worm-prepared.png").convert()
+        self.sheetTerrain = pygame.image.load("grass-1-1.png").convert_alpha()
+        self.sheetPlayerIdle = pygame.image.load("hr-level1_idle.png").convert_alpha()
+        self.sheetPlayerRunning = pygame.image.load("hr-level1_running.png").convert_alpha()
+        self.sheetExplosion = pygame.image.load("explosion-1.png").convert_alpha()
+        self.sheetWormReady = pygame.image.load("worm-prepared.png").convert_alpha()
+        self.sheetWormAttack1 = pygame.image.load("worm-attack-01.png").convert_alpha()
+        self.sheetWormDie = pygame.image.load("worm-die.png").convert_alpha()
 
 
+        #single sprites
+        spriteDynamite = pygame.image.load("cliff-explosives.png").convert_alpha()
+        self.spriteDynamite = pygame.transform.scale(spriteDynamite,(self.bombSize[0],self.bombSize[1]))
+
+        
         #player sprites
-        #Up = (88*0,132*0,88,132) Up+Right = (88*0,132*1,88,132) Right = (88*0,132*2,88,132) Right+down = (88*0,132*0,88,132) Down = (88*0,132*4,88,132) Left = (88*0,132*6,88,132)
         playerRects = ((88*0,132*0,88,132),(88*0,132*1,88,132),(88*0,132*2,88,132),(88*0,132*3,88,132),(88*0,132*4,88,132),(88*0,132*5,88,132),(88*0,132*6,88,132),(88*0,132*7,88,132))
         for r in playerRects:
-            image = pygame.Surface(pygame.Rect(r).size).convert()
+            image = pygame.Surface(pygame.Rect(r).size,pygame.SRCALPHA,32).convert_alpha()
             image.blit(self.sheetPlayerRunning, (0, 0), pygame.Rect(r))
-            self.playerSprites.append(image)        
+            sprite = pygame.transform.scale(image,(self.playerSize[0],self.playerSize[1]))
+            self.playerSprites.append(sprite)        
    
 
         #explosion sprites
         explosionRects = ((64*0,0,64,59),(64*1,0,64,59),(64*1,0,64,59),(64*2,0,64,59),(64*2,0,64,59),(64*3,0,64,59),(64*4,0,64,59),(64*5,0,64,59),(64*6,0,64,59),(64*7,0,64,59),(64*8,0,64,59),(64*9,0,64,59),(64*10,0,64,59),(64*11,0,64,59),(64*12,0,64,59),(64*13,0,64,59))
         for r in explosionRects:
-            image = pygame.Surface(pygame.Rect(r).size).convert()
+            image = pygame.Surface(pygame.Rect(r).size,pygame.SRCALPHA,32).convert_alpha()
             image.blit(self.sheetExplosion, (0, 0), pygame.Rect(r))
+            sprite = pygame.transform.scale(image,(int(64*1),int(59*1)))
             self.explosionSprites.append(image)
         
-
+        #enemy ready
         wormReadyRects = []
         for i in range (0,10):
             wormReadyRects.append((190*i,156*0,190,156))
         for w in wormReadyRects:
-            image = pygame.Surface(pygame.Rect(r).size).convert()
-            image.blit(self.sheetWormReady, (0, 0), pygame.Rect(r))
-            self.wormReadySprites.append(image)
-
+            image = pygame.Surface(pygame.Rect(w).size,pygame.SRCALPHA,32).convert_alpha()
+            image.blit(self.sheetWormReady, (0, 0), pygame.Rect(w))
+            sprite = pygame.transform.scale(image,(100,100))
+            self.wormReadySprites.append(sprite)
+        
+        #enemy attack
         wormAttack1Rects = []
         for i in range (0,8):
-            rect = (248*i,196*6,248,196)
+            rect = (248*i+25,196*6+19,248,170)
             wormAttack1Rects.append(rect)
         for w in wormAttack1Rects:
-            image = pygame.Surface(pygame.Rect(r).size).convert()
-            image.blit(self.sheetWormReady, (0, 0), pygame.Rect(r))
-            self.wormAttack1Sprites.append(image)
+            image = pygame.Surface(pygame.Rect(w).size,pygame.SRCALPHA,32).convert_alpha()
+            image.blit(self.sheetWormAttack1, (0, 0), pygame.Rect(w))
+            sprite = pygame.transform.scale(image,(self.enemySize[0],self.enemySize[1]))
+            self.wormAttack1Sprites.append(sprite)
+
+        #enemy die
+        wormDieRects = []
+        for x in range (0,5):
+            for y in range (0,3):
+                rect = (1188/6*x, 684/4*y, 1188/6, 684/4)
+                wormDieRects.append(rect)
+        for w in wormDieRects:
+            image = pygame.Surface(pygame.Rect(w).size,pygame.SRCALPHA,32).convert_alpha()
+            image.blit(self.sheetWormDie, (0, 0), pygame.Rect(w))
+            sprite = pygame.transform.scale(image,(self.enemySize[0],self.enemySize[1]))
+            self.wormDieSprites.append(sprite)
+
+
         
-
-
-    '''
-    def lavKnapper(self,pygame):
-        self.knapper = []
-        
-        WHITE = (255,255,255)
-        BLACK = (0,0,0)
-        myFont = pygame.font.SysFont('Comic Sans MS', 30)
-
-        #knap ((R,G,B),(CornerX,cornerY,height,width))
-
-        startKnap = ((200,200,200),(100,75,200,50))
-        self.knapper.append(startKnap)
-    '''
-
 
 
             

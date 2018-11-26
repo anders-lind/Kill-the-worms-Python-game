@@ -9,6 +9,8 @@ class Bomb():
         self.vel = vel
         self.timer = 0
         self.exploded = False
+        self.radius = 5
+        self.size = [128,128]
 
         self.direction = self.findDirection(self.pos,self.endPos)
 
