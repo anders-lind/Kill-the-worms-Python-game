@@ -34,8 +34,6 @@ def main():
 def render(screen):
 	if (game.started):
 		#things on the screen is rendered here
-
-
 		font1 = pygame.font.SysFont('Comic Sans MS', 30)
 		
 		#state 0 = Start menu
@@ -52,7 +50,7 @@ def render(screen):
 				screen.blit(textSurface,(100+60,75))
 
 		#state 1 = in-game				
-		if game.state == 1:
+		if game.state == 1 or game.state == 2:
 			#background
 			screen.blit(game.sheetTerrain,(-128*2,128*0))
 			screen.blit(game.sheetTerrain,(-128*4,128*1))
@@ -111,22 +109,34 @@ def render(screen):
 				screen.blit(game.playerSprites[6],playerSpritePos)
 
 
-			#enemies
+			#enemies alive
 			for e in game.enemies:
 				e.tick()
-				if e.alive:
-					if e.timer+1 > len(game.wormAttack1Sprites):
-						e.timer = 0
-					sprite = game.wormAttack1Sprites[e.timer]
-				if not e.alive:
-					if e.timer+1 > len(game.wormDieSprites):
-						sprite = game.wormDieSprites[len(game.wormDieSprites)-1]
-					else:
-						sprite = game.wormDieSprites[e.timer]
-				screen.blit(sprite,e.pos)
+				if e.timer+1 > len(game.wormAttack1Sprites):
+					e.timer = 0
+				sprite = game.wormAttack1Sprites[e.timer]
+				pos = [e.pos[0] - e.size[0]/2,e.pos[1] - e.size[1]/2]
+				screen.blit(sprite,pos)
+
 				#hitbox
 				if game.devMode:
 					pygame.draw.circle(screen,[255,0,0],e.pos,int(game.enemySize[1]/2),1)
+					pygame.draw.rect(screen,[255,0,0],(pos[0],pos[1],e.size[0],e.size[1]),1)
+				
+			#enemies dead
+			for e in game.deadEnemies:
+				e.tick()
+				if e.timer+1 > len(game.wormDieSprites):
+					sprite = game.wormDieSprites[len(game.wormDieSprites)-1]
+				else:
+					sprite = game.wormDieSprites[e.timer]
+				pos = [e.pos[0] - e.size[0]/2,e.pos[1] - e.size[1]/2]
+				screen.blit(sprite,pos)
+				#hitbox
+				if game.devMode:
+					pygame.draw.circle(screen,[255,0,0],e.pos,int(game.enemySize[1]/2),1)
+					pygame.draw.rect(screen,[255,0,0],(pos[0],pos[1],e.size[0],e.size[1]),1)
+
 
 			#bombs
 			for b in game.bombs:
@@ -151,12 +161,34 @@ def render(screen):
 						del game.animations[n]
 			
 			#HUD
-			
+			#timer
+			pygame.draw.rect(screen,(0,0,0),(770,10,200,50))
+			text = str("Time: " + str(int(game.time/60)))
+			textSurface = font1.render(text, True, (255, 255, 255))
+			screen.blit(textSurface,(780,10))
+
 			#points
-			pygame.draw.rect(screen,(0,0,0,0),(990,10,200,50))
+			pygame.draw.rect(screen,(0,0,0),(990,10,200,50))
 			text = str("Points: " + str(game.points))
 			textSurface = font1.render(text, True, (255, 255, 255))
 			screen.blit(textSurface,(1000,10))
+
+			#win screen
+			if game.state == 2:
+				s = pygame.Surface((550,160),pygame.SRCALPHA)
+				s.fill((50,50,50,200))
+				text1 = str("You killed all enemies!")
+				text2 = str("It only took " + str(int(game.time/60)) + " seconds")
+				text3 = str("You earned  a score of " + str(int(game.points*100 / (int((game.time/60)+1)))))
+				font1 = pygame.font.SysFont('Comic Sans MS', 40)
+				textSurface1 = font1.render(text1, True, (255, 255, 255))
+				textSurface2 = font1.render(text2, True, (255, 255, 255))
+				textSurface3 = font1.render(text3, True, (255, 255, 255))
+				s.blit(textSurface1,(10,10))
+				s.blit(textSurface2,(10,10+40))
+				s.blit(textSurface3,(10,10+80))
+				screen.blit(s,(350,250))
+
 
 					
 		pygame.display.flip()

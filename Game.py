@@ -9,7 +9,9 @@ class Game():
         self.started = False
         self.done = False
         self.state = 0
+        self.time = 0
         self.state1Started = False
+        self.gameWon = False
         self.devMode = True
 
         #mus
@@ -95,18 +97,24 @@ class Game():
         print("creating map")
         for i in range (0,10):
             #x = 1200  y = 700
-
             x = randint(100,1100)
             y = randint(100,600)
             pos = [x,y]
             self.createEnemy(pos,self.enemySize)
 
+    def wonGame(self):
+        self.gameWon = True
+        self.state = 2
+
 
     def gameConfig(self):
         if self.state == 1:
+            self.time += 1
             if not self.state1Started:
                 self.state1Started = True
                 self.map()
+            if len(self.enemies) == 0:
+                self.wonGame()
         else:
             pass
 
@@ -176,8 +184,11 @@ class Game():
             if not self.e:
                 self.enemyCreatable = True
             if self.p:
-                for e in self.enemies:
-                    e.die()
+                if self.devMode:
+                    for e in self.enemies:
+                        e.die()
+                        self.deadEnemies.append(e)
+                    self.enemies = []
 
 
     def physics(self):
