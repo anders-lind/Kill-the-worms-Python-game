@@ -1,6 +1,7 @@
 from Bomb import Bomb
 from Enemy import Enemy
-from Animations import AnimePlayer, AnimeExplosions
+from Animations import AnimeExplosions
+#from Animations import AnimePlayer
 from random import randint
 
 class Game():
@@ -67,7 +68,7 @@ class Game():
         self.wormDieSprites = []
 
         #test
-        self.animePlayer = AnimePlayer(pygame)
+        #self.animePlayer = AnimePlayer(pygame)
 
         #animations
         self.animations = []
@@ -254,7 +255,7 @@ class Game():
 
                     del self.bombs[bN]
 
-
+    '''
     def getSprite(self,type,info):
         if type == 1:
             action,direction = info
@@ -262,7 +263,7 @@ class Game():
             return sprite
         else:
             print("Du valgte ikke player-animation")
-
+    '''
 
     def sprites(self,pygame):
         #sprite sheets
